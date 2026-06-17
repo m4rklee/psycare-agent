@@ -49,7 +49,7 @@ Skills / Tools / RAG / Memory / MCP
 Final response / report / alert
 ```
 
-Core flow:
+核心流程:
 
 1. 用户在学生端发送文本、语音或多模态消息。
 2. 后端恢复会话上下文，写入用户消息和多模态 system memory。
