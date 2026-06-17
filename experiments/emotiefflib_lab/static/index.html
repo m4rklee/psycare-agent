@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EmotiEffLib Lab</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">MindBridge Experiment</p>
+          <h1>EmotiEffLib 本地表情识别实验</h1>
+        </div>
+        <div class="status" id="serviceStatus">检查服务中...</div>
+      </section>
+
+      <section class="workspace">
+        <div class="preview">
+          <video id="camera" autoplay playsinline muted></video>
+          <canvas id="canvas" width="640" height="480"></canvas>
+        </div>
+
+        <aside class="panel">
+          <div class="controls">
+            <button id="startBtn" type="button">开启摄像头</button>
+            <button id="stopBtn" type="button">停止摄像头</button>
+            <button id="captureBtn" type="button">单帧分析</button>
+            <label class="toggle">
+              <input id="autoToggle" type="checkbox" />
+              <span>自动分析</span>
+            </label>
+          </div>
+
+          <div class="result-grid">
+            <div>
+              <span>标准标签</span>
+              <strong id="emotion">-</strong>
+            </div>
+            <div>
+              <span>原始标签</span>
+              <strong id="rawEmotion">-</strong>
+            </div>
+            <div>
+              <span>分数</span>
+              <strong id="score">-</strong>
+            </div>
+            <div>
+              <span>风险</span>
+              <strong id="riskLevel">-</strong>
+            </div>
+            <div>
+              <span>置信度</span>
+              <strong id="confidence">-</strong>
+            </div>
+            <div>
+              <span>模型</span>
+              <strong id="modelName">-</strong>
+            </div>
+          </div>
+
+          <div class="probabilities" id="probabilities"></div>
+          <p class="evidence" id="evidence">等待摄像头输入。</p>
+          <p class="note">面部表情分类是弱视觉信号，不等同于心理状态或医学诊断。</p>
+        </aside>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

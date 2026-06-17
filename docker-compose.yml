@@ -1,0 +1,80 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    image: multimodalagent-python:0.1.0
+    container_name: multimodalAgent-agent
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      chroma:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: mysql+aiomysql://multimodalAgent:multimodalAgent@mysql:3306/multimodalAgent?charset=utf8mb4
+      REDIS_URL: redis://redis:6379/0
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-multimodalAgent-qwen2.5-7b-ft:latest}
+      USE_CHROMA: ${USE_CHROMA:-true}
+      CHROMA_BASE_URL: http://chroma:8000
+      WHISPER_MODE: ${WHISPER_MODE:-mock}
+      WHISPER_BASE_URL: ${WHISPER_BASE_URL:-https://api.openai.com}
+      WHISPER_API_KEY: ${WHISPER_API_KEY:-}
+      WHISPER_MODEL: ${WHISPER_MODEL:-whisper-1}
+      POSTER_PP_URL: ${POSTER_PP_URL:-http://host.docker.internal:8096}
+      MCP_EMAIL_MODE: ${MCP_EMAIL_MODE:-log}
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+
+  mysql:
+    image: mysql:8.4
+    container_name: multimodalAgent-mysql
+    environment:
+      MYSQL_DATABASE: multimodalAgent
+      MYSQL_USER: multimodalAgent
+      MYSQL_PASSWORD: multimodalAgent
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: multimodalAgent-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+
+  chroma:
+    image: chromadb/chroma:0.5.23
+    container_name: multimodalAgent-chroma
+    volumes:
+      - chroma-data:/chroma/chroma
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: multimodalAgent-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  mysql-data:
+  redis-data:
+  chroma-data:

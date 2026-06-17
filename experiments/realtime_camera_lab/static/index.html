@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Realtime Face Mesh Lab</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="lab-shell">
+    <header class="topbar">
+      <div>
+        <p class="kicker">Isolated Face Mesh Experiment</p>
+        <h1>实时 Face Mesh 视觉分析实验</h1>
+      </div>
+      <span id="serviceState" class="status-dot">连接中</span>
+    </header>
+
+    <section class="workspace">
+      <section class="camera-panel">
+        <div class="preview-frame">
+          <video id="cameraPreview" autoplay muted playsinline></video>
+          <div id="previewEmpty" class="preview-empty">
+            <strong>摄像头未开启</strong>
+            <span>点击开启摄像头后，浏览器会用 MediaPipe FaceLandmarker 实时分析。</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="startCamera" type="button" class="primary">开启摄像头</button>
+          <button id="stopCamera" type="button" disabled>停止摄像头</button>
+          <button id="analyzeOnce" type="button" disabled>单帧检测</button>
+          <label class="toggle">
+            <input id="autoAnalyze" type="checkbox" disabled>
+            <span>自动分析</span>
+          </label>
+        </div>
+
+        <p id="cameraState" class="state-line">等待摄像头权限</p>
+      </section>
+
+      <aside class="result-panel">
+        <p class="kicker">Face Mesh Signal</p>
+        <div class="metric hero">
+          <span>情绪标签</span>
+          <strong id="emotionValue">--</strong>
+        </div>
+        <div class="metric-grid">
+          <div class="metric">
+            <span>风险等级</span>
+            <strong id="riskValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>视觉分</span>
+            <strong id="scoreValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>置信度</span>
+            <strong id="confidenceValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>更新时间</span>
+            <strong id="timeValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>人脸</span>
+            <strong id="faceValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>Landmarks</span>
+            <strong id="landmarkValue">--</strong>
+          </div>
+        </div>
+        <section class="evidence-box">
+          <h2>分析依据</h2>
+          <p id="evidenceValue">尚未检测。实验模块不会保存原始视频、图片帧或 landmarks。</p>
+        </section>
+        <section class="evidence-box">
+          <h2>关键 Face Mesh 特征</h2>
+          <dl id="featureList" class="feature-list">
+            <div><dt>browTension</dt><dd>--</dd></div>
+            <div><dt>eyeTension</dt><dd>--</dd></div>
+            <div><dt>mouthDown</dt><dd>--</dd></div>
+            <div><dt>muscleTension</dt><dd>--</dd></div>
+          </dl>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module" src="/static/app.js?v=facemesh-local-normalize"></script>
+</body>
+</html>

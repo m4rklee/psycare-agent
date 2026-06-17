@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UniFER-7B Lab</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">MindBridge Experiment</p>
+          <h1>UniFER-7B 表情推理实验</h1>
+        </div>
+        <div class="status" id="serviceStatus">检查服务中...</div>
+      </section>
+
+      <section class="workspace">
+        <div class="preview">
+          <video id="camera" autoplay playsinline muted></video>
+          <canvas id="overlayCanvas" width="640" height="480"></canvas>
+          <canvas id="canvas" width="640" height="480"></canvas>
+        </div>
+
+        <aside class="panel">
+          <div class="controls">
+            <button id="startBtn" type="button">开启摄像头</button>
+            <button id="stopBtn" type="button">停止摄像头</button>
+            <button id="captureBtn" type="button">单帧分析</button>
+            <label class="toggle">
+              <input id="autoToggle" type="checkbox" />
+              <span>自动分析（10 秒）</span>
+            </label>
+          </div>
+
+          <div class="result-grid">
+            <div>
+              <span>标准标签</span>
+              <strong id="emotion">-</strong>
+            </div>
+            <div>
+              <span>UniFER 标签</span>
+              <strong id="rawEmotion">-</strong>
+            </div>
+            <div>
+              <span>分数</span>
+              <strong id="score">-</strong>
+            </div>
+            <div>
+              <span>风险</span>
+              <strong id="riskLevel">-</strong>
+            </div>
+            <div>
+              <span>置信度</span>
+              <strong id="confidence">-</strong>
+            </div>
+            <div>
+              <span>运行状态</span>
+              <strong id="runtimeStatus">-</strong>
+            </div>
+            <div>
+              <span>人脸预处理</span>
+              <strong id="preprocessStatus">-</strong>
+            </div>
+            <div>
+              <span>解析状态</span>
+              <strong id="parseStatus">-</strong>
+            </div>
+          </div>
+
+          <div class="crop-preview">
+            <span>UniFER 输入对齐预览</span>
+            <canvas id="faceCanvas" width="224" height="224"></canvas>
+          </div>
+
+          <dl class="asset-list">
+            <div>
+              <dt>model</dt>
+              <dd id="modelState">-</dd>
+            </div>
+            <div>
+              <dt>cache</dt>
+              <dd id="cacheState">-</dd>
+            </div>
+            <div>
+              <dt>device</dt>
+              <dd id="deviceState">-</dd>
+            </div>
+          </dl>
+
+          <section class="reasoning">
+            <h2>推理摘要</h2>
+            <p id="thinkText">-</p>
+            <h2>原始响应</h2>
+            <pre id="rawResponse">-</pre>
+          </section>
+
+          <p class="evidence" id="evidence">等待摄像头输入。</p>
+          <p class="note">UniFER-7B 输出是表情识别弱信号，不等同于心理状态或医学诊断。</p>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

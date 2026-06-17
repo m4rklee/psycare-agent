@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FED-PsyAU Lab</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">MindBridge Experiment</p>
+          <h1>FED-PsyAU 微表情短视频实验</h1>
+        </div>
+        <div class="status" id="serviceStatus">检查服务中...</div>
+      </section>
+
+      <section class="workspace">
+        <div class="preview">
+          <video id="camera" autoplay playsinline muted></video>
+        </div>
+
+        <aside class="panel">
+          <div class="controls">
+            <button id="startBtn" type="button">开启摄像头</button>
+            <button id="stopBtn" type="button">停止摄像头</button>
+            <button id="recordBtn" type="button">录制并分析一次</button>
+            <label class="toggle">
+              <input id="autoToggle" type="checkbox" />
+              <span>自动短片分析</span>
+            </label>
+          </div>
+
+          <div class="result-grid">
+            <div>
+              <span>标准标签</span>
+              <strong id="emotion">-</strong>
+            </div>
+            <div>
+              <span>微表情</span>
+              <strong id="microExpression">-</strong>
+            </div>
+            <div>
+              <span>分数</span>
+              <strong id="score">-</strong>
+            </div>
+            <div>
+              <span>风险</span>
+              <strong id="riskLevel">-</strong>
+            </div>
+            <div>
+              <span>置信度</span>
+              <strong id="confidence">-</strong>
+            </div>
+            <div>
+              <span>运行状态</span>
+              <strong id="runtimeStatus">-</strong>
+            </div>
+          </div>
+
+          <div class="probabilities" id="probabilities"></div>
+          <div class="probabilities" id="aus"></div>
+          <p class="evidence" id="evidence">等待摄像头短视频输入。</p>
+          <p class="note">FED-PsyAU 面向微表情短视频，不是单帧普通表情识别；输出不等同于心理诊断。</p>
+        </aside>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

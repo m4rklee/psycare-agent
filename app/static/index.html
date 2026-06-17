@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>心理咨询助手</title>
+  <link rel="stylesheet" href="/styles.css?v=20260616-main-agent">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="account-corner" aria-label="账号">
+      <form id="loginForm" class="login-strip">
+        <input id="username" name="username" value="student" autocomplete="username" aria-label="账号">
+        <input id="password" name="password" value="student123" type="password" autocomplete="current-password" aria-label="密码">
+        <button type="submit">进入</button>
+        <p id="loginState">student / student123</p>
+      </form>
+      <section id="accountPanel" class="account-strip" hidden>
+        <div>
+          <strong id="activeAccount">已登录</strong>
+          <span id="activeRole">学生账号</span>
+        </div>
+        <button id="switchAccount" type="button">切换</button>
+      </section>
+    </section>
+
+    <section id="studentView" class="student-console sidebar-open">
+      <button id="mobileHistoryToggle" class="sidebar-mobile-button" type="button" aria-label="展开历史记录" title="历史记录">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 6h16"></path>
+          <path d="M4 12h16"></path>
+          <path d="M4 18h16"></path>
+        </svg>
+      </button>
+
+      <aside id="historySidebar" class="history-sidebar" aria-label="历史记录">
+        <div class="history-toolbar">
+          <button id="sidebarToggle" class="icon-button" type="button" aria-label="收起历史记录" title="收起历史记录">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+          </button>
+          <strong>历史记录</strong>
+        </div>
+        <button id="newSessionButton" type="button" class="new-chat-button">
+          <span>+</span>
+          <strong>新会话</strong>
+        </button>
+        <div id="historyList" class="history-list"></div>
+        <p id="historyEmpty" class="history-empty">暂无历史记录</p>
+      </aside>
+      <button id="historyOverlay" class="history-overlay" type="button" aria-label="关闭历史记录" hidden></button>
+
+      <section class="dialog-stage">
+        <div id="messages" class="message-stream" aria-live="polite"></div>
+
+        <form id="chatForm" class="chat-composer">
+          <div class="attachment-row">
+            <div id="attachmentState" class="attachment-tray" hidden>暂无附件</div>
+            <button id="clearAttachments" type="button" class="link-button" hidden>清空</button>
+          </div>
+          <div class="composer-box">
+            <textarea id="messageInput" rows="1" placeholder="给心理咨询助手发送消息"></textarea>
+            <div class="composer-actions">
+              <div class="media-actions">
+                <label class="icon-button" title="上传图像" aria-label="上传图像">
+                  <input id="imageInput" type="file" accept="image/*">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5v-13Z"></path>
+                    <path d="m7 16 3.2-3.2a1.4 1.4 0 0 1 2 0L15 15.6l1-1a1.4 1.4 0 0 1 2 0L20 16.6"></path>
+                    <path d="M8.5 8.5h.01"></path>
+                  </svg>
+                </label>
+                <button id="micButton" class="icon-button" type="button" title="开始录音" aria-label="开始录音">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path>
+                    <path d="M19 11a7 7 0 0 1-14 0"></path>
+                    <path d="M12 18v3"></path>
+                  </svg>
+                </button>
+                <input id="audioInput" type="file" accept="audio/*" hidden>
+                <button id="videoChatButton" class="icon-button" type="button" title="视频聊天" aria-label="视频聊天">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h8A2.5 2.5 0 0 1 17 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-8A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                    <path d="m17 10 3-2v8l-3-2"></path>
+                  </svg>
+                </button>
+                <input id="videoInput" type="file" accept="video/*" hidden>
+              </div>
+              <div class="send-actions">
+                <button id="sendButton" type="submit" class="icon-button send-button" title="发送消息" aria-label="发送消息">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m5 12 14-7-4 14-3-6-7-1Z"></path>
+                    <path d="m12 13 7-8"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <section id="adminView" class="admin-console" hidden>
+      <header class="admin-head">
+        <div>
+          <p class="kicker">Counselor Workbench</p>
+          <h2>心理中心工作台</h2>
+        </div>
+        <button id="adminRefresh" type="button">刷新</button>
+      </header>
+
+      <section id="adminStats" class="stats-grid"></section>
+
+      <section class="admin-layout">
+        <section class="admin-column priority-column">
+          <div class="column-head">
+            <h3>风险队列</h3>
+            <span id="queueCount">0</span>
+          </div>
+          <div id="adminReportRows" class="record-list"></div>
+        </section>
+
+        <section class="admin-column">
+          <div class="column-head">
+            <h3>数据闭环</h3>
+          </div>
+          <div id="excelRows" class="record-list"></div>
+        </section>
+
+        <section class="admin-column">
+          <div class="column-head">
+            <h3>预警送达</h3>
+          </div>
+          <div id="emailRows" class="record-list"></div>
+        </section>
+      </section>
+
+      <form id="knowledgeUploadForm" class="knowledge-bar">
+        <div>
+          <p class="kicker">Knowledge Base</p>
+          <strong id="knowledgeUploadState">上传 PDF / Markdown / TXT</strong>
+        </div>
+        <label class="upload-button">
+          <input id="knowledgeFile" type="file" accept=".pdf,.md,.markdown,.txt,application/pdf,text/markdown,text/plain">
+          <span>选择文件</span>
+        </label>
+        <button type="submit">入库</button>
+      </form>
+    </section>
+  </main>
+
+  <section id="videoChatOverlay" class="video-chat-overlay" hidden>
+    <div class="video-chat-shell">
+      <header class="video-chat-head">
+        <div>
+          <p class="kicker">POSTER++ Video Chat</p>
+          <h2>视频心理支持</h2>
+        </div>
+        <button id="closeVideoChat" class="icon-button" type="button" aria-label="关闭视频聊天" title="关闭">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </header>
+
+      <section class="video-chat-body">
+        <div class="video-stage">
+          <video id="videoChatPreview" autoplay playsinline muted></video>
+          <canvas id="videoChatCanvas" width="640" height="480" hidden></canvas>
+          <div class="video-status-strip">
+            <span id="videoChatState">等待开启摄像头</span>
+            <span id="videoVadState">VAD 未启动</span>
+          </div>
+        </div>
+
+        <aside class="video-chat-panel">
+          <div class="video-metrics">
+            <div><span>POSTER++ 情绪</span><strong id="videoEmotion">-</strong></div>
+            <div><span>风险</span><strong id="videoRisk">-</strong></div>
+            <div><span>置信度</span><strong id="videoConfidence">-</strong></div>
+          </div>
+          <p id="videoEvidence" class="video-evidence">开启后会分析当前人脸帧。</p>
+          <textarea id="videoPromptInput" rows="3" placeholder="可选：补充你想说的话"></textarea>
+          <div class="video-actions">
+            <button id="startVideoChat" type="button">开启视频</button>
+            <button id="videoTalkButton" type="button" disabled>开始一轮</button>
+            <button id="endVideoChat" type="button">结束</button>
+          </div>
+          <div id="videoReplyStream" class="video-reply-stream" aria-live="polite"></div>
+        </aside>
+      </section>
+    </div>
+  </section>
+
+  <section id="detailOverlay" class="detail-overlay" hidden>
+    <article class="detail-drawer">
+      <header>
+        <div>
+          <p id="detailKicker" class="kicker">详情</p>
+          <h2 id="detailTitle">记录</h2>
+          <p id="detailMeta"></p>
+        </div>
+        <button id="closeDetail" type="button">关闭</button>
+      </header>
+      <div id="detailBody" class="detail-body"></div>
+    </article>
+  </section>
+
+  <script src="/app.js?v=20260616-main-agent"></script>
+</body>
+</html>
