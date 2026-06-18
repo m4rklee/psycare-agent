@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 from io import BytesIO
 from dataclasses import dataclass
@@ -20,6 +21,8 @@ BROWSER_RECORDING_MOCK_ERROR_MESSAGE = (
     "请配置 WHISPER_MODE=openai 和 OPENAI_API_KEY 后重建 app。"
 )
 POSTER_PP_ERROR_MESSAGE = "POSTER++ 视频表情分析失败，请确认模型服务已启动并稍后重试。"
+
+logger = logging.getLogger(__name__)
 
 
 class WhisperTranscriptionError(RuntimeError):
@@ -85,10 +88,16 @@ class WhisperClient:
             client = AsyncOpenAI(
                 api_key=api_key,
                 base_url=self.settings.whisper_base_url,
+                timeout=60.0,
+                max_retries=0,
             )
             response = await client.audio.transcriptions.create(
                 model=self.settings.whisper_model,
-                file=(file.filename or "audio.webm", data, file.content_type or "application/octet-stream"),
+                file=(
+                    self.safe_upload_filename(file),
+                    data,
+                    file.content_type or "application/octet-stream",
+                ),
             )
             text = response.text.strip()
             if not text:
@@ -97,7 +106,36 @@ class WhisperClient:
         except WhisperTranscriptionError:
             raise
         except Exception as exc:
+            logger.warning(
+                "Whisper transcription request failed: error_type=%s status_code=%s body=%s",
+                type(exc).__name__,
+                getattr(exc, "status_code", None),
+                self._safe_error_body(getattr(exc, "body", None)),
+            )
             raise WhisperTranscriptionError("OpenAI Whisper request failed.") from exc
+
+    def safe_upload_filename(self, file: UploadFile | None) -> str:
+        filename = (getattr(file, "filename", "") or "").lower()
+        content_type = (getattr(file, "content_type", "") or "").lower()
+        if content_type in {"audio/webm", "video/webm"} or filename.endswith(".webm"):
+            return "audio.webm"
+        if content_type in {"audio/mpeg", "audio/mp3"} or filename.endswith(".mp3"):
+            return "audio.mp3"
+        if content_type in {"audio/wav", "audio/x-wav", "audio/wave"} or filename.endswith(".wav"):
+            return "audio.wav"
+        if content_type in {"audio/mp4", "audio/x-m4a"} or filename.endswith((".m4a", ".mp4")):
+            return "audio.m4a"
+        if content_type.startswith("audio/"):
+            return "audio.bin"
+        return "audio.webm"
+
+    def _safe_error_body(self, body: object) -> str:
+        if body is None:
+            return ""
+        text = str(body).replace(self.settings.whisper_api_key, "[redacted]")
+        if self.settings.openai_api_key:
+            text = text.replace(self.settings.openai_api_key, "[redacted]")
+        return text[:500]
 
     def mock_transcript(self, file: UploadFile | None) -> str:
         filename = (getattr(file, "filename", "") or "").lower()

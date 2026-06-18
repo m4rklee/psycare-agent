@@ -29,8 +29,9 @@ class LargeUpload:
 class NamedUpload:
     content_type = "audio/webm"
 
-    def __init__(self, filename: str) -> None:
+    def __init__(self, filename: str, content_type: str = "audio/webm") -> None:
         self.filename = filename
+        self.content_type = content_type
 
     async def read(self, size: int = -1) -> bytes:
         return b"audio"
@@ -129,7 +130,7 @@ async def test_visual_upload_over_8mb_returns_unsupported_signal() -> None:
 
 @pytest.mark.asyncio
 async def test_whisper_mock_matches_java_filename_rules() -> None:
-    client = WhisperClient(Settings(ai_provider="mock"))
+    client = WhisperClient(Settings(ai_provider="mock", whisper_mode="mock"))
     assert await client.transcribe(NamedUpload("risk-note.webm")) == "语音转写提示：我感觉自己快撑不下去了。"
     assert await client.transcribe(NamedUpload("sad-note.webm")) == "语音转写提示：我最近情绪很低落。"
     assert await client.transcribe(NamedUpload("anxious-note.webm")) == "语音转写提示：我最近有些焦虑，睡眠也不太好。"
@@ -138,7 +139,7 @@ async def test_whisper_mock_matches_java_filename_rules() -> None:
 
 @pytest.mark.asyncio
 async def test_whisper_mock_rejects_browser_recordings() -> None:
-    client = WhisperClient(Settings(ai_provider="mock"))
+    client = WhisperClient(Settings(ai_provider="mock", whisper_mode="mock"))
 
     with pytest.raises(WhisperTranscriptionError, match="浏览器录音无法生成真实转录"):
         await client.transcribe(NamedUpload("mic-recording-1781489623647.webm"))
@@ -153,6 +154,16 @@ async def test_whisper_openai_without_key_raises_configuration_error() -> None:
 
     with pytest.raises(WhisperTranscriptionError):
         await client.transcribe(NamedUpload("crisis-note.webm"))
+
+
+def test_whisper_safe_upload_filename_normalizes_browser_recordings() -> None:
+    client = WhisperClient(Settings(ai_provider="mock", whisper_mode="mock"))
+
+    assert client.safe_upload_filename(NamedUpload("mic-recording-1781489623647.webm")) == "audio.webm"
+    assert client.safe_upload_filename(NamedUpload("video-turn-1781489623647.webm")) == "audio.webm"
+    assert client.safe_upload_filename(NamedUpload("voice.mp3", "audio/mpeg")) == "audio.mp3"
+    assert client.safe_upload_filename(NamedUpload("voice.wav", "audio/wav")) == "audio.wav"
+    assert client.safe_upload_filename(NamedUpload("voice.unknown", "audio/ogg")) == "audio.bin"
 
 
 @pytest.mark.asyncio
@@ -171,10 +182,55 @@ async def test_whisper_openai_failure_raises_instead_of_mocking(monkeypatch: pyt
             pass
 
     monkeypatch.setattr("app.services.multimodal.AsyncOpenAI", FailingOpenAI)
-    client = WhisperClient(Settings(ai_provider="mock", whisper_mode="openai", whisper_api_key="test"))
+    client = WhisperClient(
+        Settings(
+            ai_provider="mock",
+            whisper_mode="openai",
+            whisper_api_key="test",
+            whisper_model="whisper-1",
+        )
+    )
 
     with pytest.raises(WhisperTranscriptionError):
         await client.transcribe(NamedUpload("crisis-note.webm"))
+
+
+@pytest.mark.asyncio
+async def test_whisper_openai_upload_uses_safe_filename(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    class FakeResponse:
+        text = "我最近有些焦虑。"
+
+    class FakeTranscriptions:
+        async def create(self, **kwargs):
+            captured.update(kwargs)
+            return FakeResponse()
+
+    class FakeAudio:
+        transcriptions = FakeTranscriptions()
+
+    class FakeOpenAI:
+        audio = FakeAudio()
+
+        def __init__(self, **kwargs) -> None:
+            captured["client_kwargs"] = kwargs
+
+    monkeypatch.setattr("app.services.multimodal.AsyncOpenAI", FakeOpenAI)
+    client = WhisperClient(
+        Settings(
+            ai_provider="mock",
+            whisper_mode="openai",
+            whisper_api_key="test",
+            whisper_model="whisper-1",
+        )
+    )
+
+    transcript = await client.transcribe(NamedUpload("mic-recording-1781489623647.webm", "audio/webm"))
+
+    assert transcript == "我最近有些焦虑。"
+    assert captured["model"] == "whisper-1"
+    assert captured["file"] == ("audio.webm", b"audio", "audio/webm")
 
 
 @pytest.mark.asyncio
@@ -255,7 +311,7 @@ async def test_multimodal_stream_returns_specific_mock_recording_error() -> None
         user=object(),  # type: ignore[arg-type]
         db=object(),  # type: ignore[arg-type]
         multimodal_service=MultimodalInputService(
-            WhisperClient(Settings(ai_provider="mock")),
+            WhisperClient(Settings(ai_provider="mock", whisper_mode="mock")),
             BrokenMediaPipeClient(),
             KeywordAssessmentService(),
             MultimodalFusionService(Settings(ai_provider="mock")),

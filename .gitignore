@@ -12,6 +12,7 @@ data/
 logs/
 .DS_Store
 *.log
+*.swp
 .env
 *.db
 *.sqlite
